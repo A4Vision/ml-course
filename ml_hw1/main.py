@@ -12,7 +12,9 @@ def main(argv):
         print "Usage: {} <output-directory>".format(__file__)
         sys.exit(2)
     output_directory = argv[1]
-    os.mkdir(output_directory)
+    if not os.path.exists(output_directory):
+        os.mkdir(output_directory)
+    assert os.path.isdir(output_directory)
     q1_knn.main(output_directory)
     q2_union_of_intervals.main(output_directory)
 

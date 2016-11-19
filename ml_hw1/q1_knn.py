@@ -50,9 +50,8 @@ def NormalizeUniform(train, test):
     diff[diff == 0] = 1.
     return (train - _min) / diff, (test - _min) / diff
 
-
+# Q1_a
 def kNN(images, labels, query_image, k):
-    # Q1_a
     assert len(images) == len(labels)
     assert k <= len(images)
     assert len(images) > 0

@@ -73,17 +73,18 @@ def Q2_a(output_directory):
 
     def part_i():
         pyplot.gca().set_ylim([-0.1, 1.1])
-        pyplot.plot(x, y, 'b^')
+        pyplot.plot(x, y, 'b^', label="samples")
     def part_ii():
         for x_boundary in [0.25, 0.5, 0.75]:
             pyplot.plot([x_boundary, x_boundary], [-0.1, 1.1], 'r-')
     def part_iii():
         k_intervals, error = intervals.find_best_interval(x, y, 2)
         for x0, x1 in k_intervals:
-            pyplot.plot([x0, x1], [0.5, 0.5], 'g-', linewidth=4)
+            pyplot.plot([x0, x1], [0.5, 0.5], 'g-', linewidth=4, label="ERM interval")
     part_i()
     part_ii()
     part_iii()
+    pyplot.legend()
     pyplot.xlabel("x ({} uniform samples)".format(m))
     pyplot.ylabel("y (label - 0/1)")
     pyplot.title("Question 2a:: Random samples from distribution,\nand predicted intervals by ERM(k=2)")
@@ -183,8 +184,9 @@ def Q2_f(output_directory):
             pyplot.plot(validation_x, validation_y, 'b*')
     best_k = k_values[numpy.argmin(errors)]
     print "\tBest k using validation:", best_k
-    pyplot.plot([best_k, best_k], [0, 1], "r--")
-    pyplot.plot(k_values, errors, 'b^--')
+    pyplot.plot([best_k, best_k], [0, 1], "r--", label="best k")
+    pyplot.plot(k_values, errors, 'b^--', label="validation empirical error")
+    pyplot.legend()
     pyplot.title("Quetion 2f:: Empirical error of validation\nas a function of k (using ERM)")
     pyplot.xlabel("k")
     pyplot.ylabel("Empirical error")
