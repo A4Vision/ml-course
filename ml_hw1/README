@@ -3,8 +3,8 @@ How to run
 ===============
 python main.py <output-directory>
 You must have write permissions to the output directory.
-Total runtime is around 530 seconds, which is 9 minutes.
-The questions that perform worst are Q2a, Q1d
+Total runtime is around 900 seconds, which is 15 minutes.
+The question that perform worst is Q2e, due to 2000 ERM calculations.
 that consume 456, 43 seconds respectively.
 
 ===============
