@@ -94,11 +94,9 @@ def Q2_a(output_directory):
     pyplot.clf()
 
 
-def Q2_c(output_directory):
+def Q2_c(output_directory, T=100, m_values=tuple(range(10, 101, 5))):
     print "::Question 2c::"
-    T = 100
     k = 2
-    m_values = range(10, 101)
     average_true_errors = []
     average_empricial_errors = []
     for m in m_values:
@@ -109,9 +107,8 @@ def Q2_c(output_directory):
             x, y = RandomDSorted(m)
             k_intervals, best_error = intervals.find_best_interval(x, y, k)
             # part ii
-            empirical_error = best_error / float(m) #EmpiricalError(x, y, k_intervals)
+            empirical_error = best_error / float(m) 
             total_empirical_error += empirical_error
-            assert round(empirical_error * m) == best_error
             # part iii
             true_error = TrueError(k_intervals)
             total_true_error += true_error
@@ -147,25 +144,31 @@ def Q2_d(output_directory):
     pyplot.clf()
 
 
-def Q2_e(output_directory):
+def Q2_e(output_directory, T=100):
     print "::Question 2e::"
-    T = 4
     m = 50
     k_values = range(1, 21)
-    errors_total = numpy.zeros((len(k_values),), dtype=numpy.float32)
+    empirical_errors_total = numpy.zeros((len(k_values),), dtype=numpy.float32)
+    true_errors_total = numpy.zeros((len(k_values),), dtype=numpy.float32)
     for i in xrange(T):
-        errors = []
+        errors_empirical = []
+        errors_true = []
         x, y = RandomDSorted(m)
         for k in k_values:
             k_intervals, error = intervals.find_best_interval(x, y, k)
-            errors.append(error / float(m))
-        errors_total += numpy.array(errors)
-    errors_average = errors_total / T
-    pyplot.plot(k_values, errors_average, 'b^--')
-    pyplot.title("Question 2e:: Average empirical error as a function of k (using ERM)")
+            errors_empirical.append(error / float(m))
+            errors_true.append(TrueError(k_intervals))
+        empirical_errors_total += numpy.array(errors_empirical)
+        true_errors_total += numpy.array(errors_true)
+
+    empirical_errors_average = empirical_errors_total / T
+    pyplot.plot(k_values, empirical_errors_average,  'ro--')
+    true_errors_average = true_errors_total / T
+    pyplot.plot(k_values, true_errors_average,  'b^--')
+    pyplot.title("Question 2e:: Average empirical/true error as a function of k (using ERM)")
     pyplot.xlabel("k")
-    pyplot.ylabel("Average empirical error")
-    pyplot.ylim([min(errors_average) - 0.01, max(errors_average) + 0.01])
+    pyplot.ylabel("Average error")
+    pyplot.ylim([min(empirical_errors_average) - 0.01, max(true_errors_average) + 0.01])
     pyplot.savefig(os.path.join(output_directory, "Q2e.png"))
     pyplot.clf()
 
@@ -181,9 +184,6 @@ def Q2_f(output_directory):
         k_intervals, error = intervals.find_best_interval(x, y, k)
         validation_error = EmpiricalError(validation_x, validation_y, k_intervals)
         errors.append(validation_error)
-        if k == 6:
-            pyplot.plot(x, y, 'ro')
-            pyplot.plot(validation_x, validation_y, 'b*')
     best_k = k_values[numpy.argmin(errors)]
     print "\tBest k using validation:", best_k
     pyplot.plot([best_k, best_k], [0, 1], "r--", label="best k")
