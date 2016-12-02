@@ -2,6 +2,8 @@ import os
 
 import numpy
 import time
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot
 
 import intervals

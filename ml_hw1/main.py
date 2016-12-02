@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 import sys
 import os
 # Allow any further imports to happen smoothly.
