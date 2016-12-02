@@ -162,9 +162,10 @@ def Q2_e(output_directory, T=100):
         true_errors_total += numpy.array(errors_true)
 
     empirical_errors_average = empirical_errors_total / T
-    pyplot.plot(k_values, empirical_errors_average,  'ro--')
+    pyplot.plot(k_values, empirical_errors_average,  'ro--', label="empirical error")
     true_errors_average = true_errors_total / T
-    pyplot.plot(k_values, true_errors_average,  'b^--')
+    pyplot.plot(k_values, true_errors_average,  'b^--', label="true error")
+    pyplot.legend()
     pyplot.title("Question 2e:: Average empirical/true error as a function of k (using ERM)")
     pyplot.xlabel("k")
     pyplot.ylabel("Average error")
