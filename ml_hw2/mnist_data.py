@@ -2,6 +2,8 @@ from numpy import *
 import numpy.random
 from sklearn.datasets import fetch_mldata
 import sklearn.preprocessing
+from numpy import where
+
 
 mnist = fetch_mldata('MNIST original')
 data = mnist['data']
