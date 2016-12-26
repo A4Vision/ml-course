@@ -1,7 +1,7 @@
 ===============
 How to run
 ===============
-python main.py <output-directory>
+python2.7 main.py <output-directory>
 You must have write permissions to the output directory.
 Total runtime is less than a minute.
 

@@ -1,5 +1,7 @@
 import random
-
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
 SHOW = True
 import tabulate
 import os
@@ -9,7 +11,7 @@ if not SHOW:
 from matplotlib import pyplot as plt
 import numpy as np
 from sklearn import preprocessing
-from ml_hw2 import mnist_data
+import mnist_data
 N_runs = 100
 
 
