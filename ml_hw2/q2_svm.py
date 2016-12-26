@@ -13,15 +13,6 @@ from sklearn import preprocessing
 from ml_hw2 import mnist_data
 from sklearn import svm
 
-def transpose_table(table):
-    """
-    ret_val[i][j] == table[j][i]
-    :param table:
-    :return:
-    """
-    return map(list, zip(*table))
-
-
 
 class OneOffTrainedSVM(object):
     def __init__(self, C, training_data, training_labels):
@@ -63,7 +54,7 @@ def optimize_C(training_data, training_labels, validation_data, validation_label
     return all_validation_accuracies, all_training_accuracies
 
 
-def q2_a(output_directory, normalized_train_data, normalized_validation_data, normalized_test_data):
+def q2(output_directory, normalized_train_data, normalized_validation_data, normalized_test_data):
     print "Q2a"
     validation_accuracies, training_accuracies = optimize_C(normalized_train_data, mnist_data.train_labels,
                                                             normalized_validation_data, mnist_data.validation_labels)
@@ -103,11 +94,8 @@ def main(dir_name):
     normalized_train_data = preprocessing.normalize(mnist_data.train_data, axis=1)
     normalized_test_data = preprocessing.normalize(mnist_data.test_data, axis=1)
     normalized_validation_data = preprocessing.normalize(mnist_data.validation_data, axis=1)
-    # q1_a(dir_name, normalized_train_data, normalized_test_data)
-    # q1_b(dir_name, normalized_train_data, normalized_test_data)
-    # q1_c(normalized_train_data, normalized_test_data)
-    # q1_d(dir_name, normalized_train_data, normalized_test_data)
-    q2_a(dir_name, normalized_train_data, normalized_validation_data, normalized_test_data)
+    q2(dir_name, normalized_train_data, normalized_validation_data, normalized_test_data)
+
 
 if __name__ == '__main__':
     dir_name = os.path.join(os.path.dirname(__file__), "outputs")
