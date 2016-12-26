@@ -3,7 +3,7 @@ import random
 import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
-SHOW = True
+SHOW = False
 import tabulate
 import os
 import matplotlib
@@ -33,6 +33,15 @@ def generate_C_values(middle, bottom, top, amount):
 
 
 def accuracies_for_C_values(c_values, training_data, training_labels, validation_data, validation_labels):
+    """
+    Returns [(validation_accuracy, training_accuracy) ...] for every c of the given C values.
+    :param c_values:
+    :param training_data:
+    :param training_labels:
+    :param validation_data:
+    :param validation_labels:
+    :return:
+    """
     classifiers = [OneOffTrainedSVM(c, training_data, training_labels) for c in c_values]
     return [(classifier.accuracy(validation_data, validation_labels),
              classifier.accuracy(training_data, training_labels)) for classifier in classifiers]
@@ -45,7 +54,6 @@ def optimize_C(training_data, training_labels, validation_data, validation_label
     for i in xrange(4):
         accuracies = accuracies_for_C_values(c_values, training_data, training_labels, validation_data, validation_labels)
         best_c_index = np.argmax([validation_accuracy for validation_accuracy, _ in accuracies])
-        print 'accuracies', accuracies
         best_c = c_values[best_c_index]
         bottom = c_values[max(0, best_c_index - 2)]
         top = c_values[min(len(c_values) - 1, best_c_index + 2)]

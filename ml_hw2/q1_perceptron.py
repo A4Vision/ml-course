@@ -2,9 +2,8 @@ import random
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
-SHOW = True
+SHOW = False
 import tabulate
-import os
 import matplotlib
 if not SHOW:
     matplotlib.use('Agg')
