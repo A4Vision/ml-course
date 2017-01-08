@@ -166,7 +166,6 @@ def test_set_accuracy(C, eta, iterations, output_directory):
     score = LinearMulticlassSVM(C)
     descent = sgd.StochasticGradientDescent(w0, eta, score)
     descent.run(iterations, train_data, train_labels)
-    descent.w().dump(open(os.path.join(output_directory, "tmp.dat"), "wb"))
     for j, w_j in enumerate(descent.w()):
         plt.imsave(os.path.join(output_directory, "w_{}.png".format(j)), np.reshape(w_j, (28, 28)))
 
@@ -175,7 +174,6 @@ def test_set_accuracy(C, eta, iterations, output_directory):
 
 
 def main(output_directory):
-    np.array([]).dump(open(os.path.join(output_directory, "tmp.dat"), "wb"))
     np.random.seed(123)
     np.seterr(all='ignore')
     x = time.time()

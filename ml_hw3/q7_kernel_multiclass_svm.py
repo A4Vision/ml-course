@@ -3,8 +3,6 @@ import sys
 import os
 import time
 import functools
-import cProfile
-import datetime
 
 # Amount kernels we calculate and keep in memory,
 # during optimization.
@@ -285,8 +283,6 @@ def test_set_accuracy(C, eta, iterations):
 def main(output_directory):
     np.random.seed(123)
     np.seterr(all='ignore')
-    p = cProfile.Profile()
-    p.enable()
     for x in ('MKL_NUM_THREADS', 'MKL_NUM_THREADS', 'OMP_NUM_THREADS'):
         os.environ[x] = '3'
     x = time.time()
@@ -301,8 +297,6 @@ def main(output_directory):
     # Calculate the accuracy on the test set, using all the data, 200000 iterations.
     print 'test set accuracy:', test_set_accuracy(best_C, best_eta, 200000)
     print 'Total runtime', time.time() - x
-    p.disable()
-    p.dump_stats("q7{}.prof".format(datetime.datetime.now().strftime("%d-%m %H-%M-%S")))
 
 
 if __name__ == '__main__':
