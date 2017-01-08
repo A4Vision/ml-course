@@ -28,7 +28,7 @@ class TestLinearMulticlassSVM(unittest.TestCase):
         # Standard gradient test:
         #       (f(x+h) - f(x)) / |h| ~= gradient
         h_size = 2 ** -10.
-        for j in xrange(2):
+        for j in xrange(k):
             for t in xrange(len(w[j])):
                 h = np.zeros_like(w)
                 h[j, t] = h_size
