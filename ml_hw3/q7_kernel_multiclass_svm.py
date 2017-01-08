@@ -251,7 +251,6 @@ def measure_accuracies(C, eta, iterations, batch_kernel, train_data, train_label
 
     gradient_calculator = KernelGradientCalculator(C)
 
-    print 'Descending...'
     descent = StochasticGradientDescent(v0, eta, gradient_calculator, batch_kernel)
     descent.run(iterations, train_labels)
     predictor = KernelMulticlassSVMPredictor(descent.v(), batch_kernel)
