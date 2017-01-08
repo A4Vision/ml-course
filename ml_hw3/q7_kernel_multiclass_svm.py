@@ -285,6 +285,7 @@ def test_set_accuracy(C, eta, iterations):
 
 def main(output_directory):
     np.random.seed(123)
+    np.seterr(all='ignore')
     p = cProfile.Profile()
     p.enable()
     for x in ('MKL_NUM_THREADS', 'MKL_NUM_THREADS', 'OMP_NUM_THREADS'):
