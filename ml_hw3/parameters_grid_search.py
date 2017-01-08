@@ -5,7 +5,7 @@ import functools
 import sys
 import os
 
-SHOW = True
+SHOW = False
 import matplotlib
 if not SHOW:
     matplotlib.use('Agg')
@@ -109,8 +109,7 @@ def grid_search(function, parameters_dim0, parameters_dim1, search_depth, grid_s
     return accuracy_measurements
 
 
-def best_C_eta(measure_wrapper_function, gross_search_iterations, n_gross_search_samples,
-               deep_search_iterations, n_deep_search_samples):
+def best_C_eta(measure_wrapper_function, gross_search_iterations, n_gross_search_samples):
     # First, we want a general idea of where to search C and eta.
     etas = [10 ** i for i in xrange(-11, 3)]
     Cs = [10 ** i for i in xrange(-4, 2)]
@@ -121,54 +120,44 @@ def best_C_eta(measure_wrapper_function, gross_search_iterations, n_gross_search
 
     print tabulate.tabulate(dict2table(validation_dict(accuracies0), "C", "eta", lambda x: "{:.5f}".format(x)))
     # The conclusion:
-    C, eta = best_parameters(accuracies0)
-    # Second, apply a deep naive grid search.
-    Cs = np.arange(C / 3., C * 3, C)
-    etas = np.arange(eta / 3., eta * 3, eta)
-    measure_accuracies1 = measure_wrapper_function(N=n_deep_search_samples)
-    measure1 = functools.partial(measure_accuracies1, iterations=deep_search_iterations)
-    # measure1 = measure0
-    accuracies1 = grid_search(measure1, Cs, etas, 2, 9)
-    print tabulate.tabulate(dict2table(validation_dict(accuracies1), "C", "eta", lambda x: "{:.5f}".format(x)))
-
-    return accuracies0, accuracies1
+    best_C, best_eta = best_parameters(accuracies0)
+    return best_C, best_eta
 
 
-def generate_error_rate_plots(best_C, best_eta, measure_func, iterations, output_directory):
-    graph_Cs = np.arange(best_C / 3., best_C * 3, best_C / 2.)
+def generate_error_rate_plots(best_C, best_eta, measure_func, iterations, output_directory, prefix):
+    graph_Cs = best_C * np.array([0.25, 0.5, 1, 1.5, 2, 4, 8])
     validation_error_rates = []
     train_error_rates = []
     for C in graph_Cs:
         measurement = measure_func(eta=best_eta, C=C, iterations=iterations)
         validation_error_rates.append(1 - measurement.validation)
         train_error_rates.append(1 - measurement.train)
-    plt.suptitle("Error rates as function of C, using the best eta.")
+    plt.suptitle(prefix + "Error rates as function of C, using the best eta.")
     plt.xlabel("C")
     plt.ylabel("error rate")
     plt.plot(graph_Cs, validation_error_rates, color='red', label='validation error rate')
     plt.plot(graph_Cs, train_error_rates, color='blue', label='training error rate')
 
     plt.legend()
-    plt.savefig(os.path.join(output_directory, "q6_svm_error_as_function_of_C.png"))
+    plt.savefig(os.path.join(output_directory, prefix + "_error_as_function_of_C.png"))
     if SHOW:
         plt.show()
-
+    plt.clf()
     validation_error_rates = []
     train_error_rates = []
-    graph_etas = np.arange(best_eta / 3., best_eta * 3, best_eta / 2.)
+    graph_etas = best_eta * np.array([0.25, 0.5, 1, 1.5, 2, 4, 8])
     for eta in graph_etas:
         measurement = measure_func(eta=eta, C=best_C, iterations=iterations)
         validation_error_rates.append(1 - measurement.validation)
         train_error_rates.append(1 - measurement.train)
 
-
-    plt.suptitle("Error rates as function of eta, using the best C.")
+    plt.suptitle(prefix + "Error rates as function of eta, using the best C.")
     plt.xlabel("eta")
     plt.ylabel("error rate")
     plt.plot(graph_etas, validation_error_rates, color='red', label='validation error rate')
     plt.plot(graph_etas, train_error_rates, color='blue', label='training error rate')
     plt.legend()
 
-    plt.savefig(os.path.join(output_directory, "q6_svm_error_as_function_of_eta.png"))
+    plt.savefig(os.path.join(output_directory, prefix + "_error_as_function_of_eta.png"))
     if SHOW:
         plt.show()

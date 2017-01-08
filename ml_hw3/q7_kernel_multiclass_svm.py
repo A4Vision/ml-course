@@ -8,7 +8,7 @@ import datetime
 
 # Amount kernels we calculate and keep in memory,
 # during optimization.
-BATCH_SIZE = 25000
+BATCH_SIZE = 10000
 # Amount kernels we calculate and keep in memory,
 # during prediction.
 SMALL_BATCH_SIZE = 1000
@@ -34,7 +34,7 @@ class KernelCalculator(object):
 
 class LinearKernel(KernelCalculator):
     def kernel_matrix(self, x1, x2):
-        print 'Allocating for kernels: {:.0f}MB'.format(x1.shape[0] * x2.shape[0] * 4 / 2 ** 20.)
+        # print 'Allocating for kernels: {:.0f}MB'.format(x1.shape[0] * x2.shape[0] * 4 / 2 ** 20.)
         assert x1.shape[0] * x2.shape[0] * 4 / 2 ** 20. < MEMORY_LIMIT_MB
         return np.dot(x1, x2.T)
 
@@ -44,7 +44,7 @@ class QuadraticKernel(KernelCalculator):
         self._c = c
 
     def kernel_matrix(self, x1, x2):
-        print 'Allocating for kernels: {:.0f}MB'.format(x1.shape[0] * x2.shape[0] * 4 / 2 ** 20.)
+        # print 'Allocating for kernels: {:.0f}MB'.format(x1.shape[0] * x2.shape[0] * 4 / 2 ** 20.)
         assert x1.shape[0] * x2.shape[0] * 4 / 2 ** 20. < MEMORY_LIMIT_MB
         return (np.dot(x1, x2.T) + self._c) ** 2
 
@@ -254,12 +254,33 @@ def measure_accuracies(C, eta, iterations, batch_kernel, train_data, train_label
     print 'Descending...'
     descent = StochasticGradientDescent(v0, eta, gradient_calculator, batch_kernel)
     descent.run(iterations, train_labels)
-    print 'Calculating accuracy...'
     predictor = KernelMulticlassSVMPredictor(descent.v(), batch_kernel)
     accuracy_validation = predictor.accuracy(validation_data, validation_labels)
     accuracy_train = predictor.accuracy(train_data, train_labels)
 
     return parameters_grid_search.AccuracyMeasurement(validation=accuracy_validation, train=accuracy_train)
+
+
+def test_set_accuracy(C, eta, iterations):
+    train_labels = np.array(mnist_data.train_labels, dtype=np.int32)
+    train_data = np.array(mnist_data.train_data, dtype=np.float32)
+    test_labels = np.array(mnist_data.test_labels, dtype=np.int32)
+    test_data = np.array(mnist_data.test_data, dtype=np.float32)
+    m, d = train_data.shape
+    # Number of labels.
+    k = 10
+
+    k = 10
+    v0 = np.zeros((k, m))
+    kernel_calculator = QuadraticKernel(1)
+    batch_kernel = BatchKernel(train_data, kernel_calculator)
+
+    gradient_calculator = KernelGradientCalculator(C)
+
+    descent = StochasticGradientDescent(v0, eta, gradient_calculator, batch_kernel)
+    descent.run(iterations, train_labels)
+    predictor = KernelMulticlassSVMPredictor(descent.v(), batch_kernel)
+    return predictor.accuracy(test_data, test_labels)
 
 
 def main(output_directory):
@@ -269,14 +290,20 @@ def main(output_directory):
     for x in ('MKL_NUM_THREADS', 'MKL_NUM_THREADS', 'OMP_NUM_THREADS'):
         os.environ[x] = '3'
     x = time.time()
-    accuracies_gross, accuracies_deep = parameters_grid_search.best_C_eta(measure_accuracies_wrapper,
-                                                   gross_search_iterations=2000, n_gross_search_samples=2000,
-                                                   deep_search_iterations=2000, n_deep_search_samples=2000)
-
+    best_C, best_eta = parameters_grid_search.best_C_eta(measure_accuracies_wrapper,
+                                                         gross_search_iterations=10000,
+                                                         n_gross_search_samples=10000)
+    print 'best: C={}, eta={}'.format(best_C, best_eta)
+    # Plot accuracy around the best eta and best C found, using all the data, and 50000 iterations.
+    parameters_grid_search.generate_error_rate_plots(best_C, best_eta,
+                                                     measure_accuracies_wrapper(N=50000), 50000,
+                                                     output_directory, "q7_Quadratic_Kernel_SVM")
+    # Calculate the accuracy on the test set, using all the data, 200000 iterations.
+    print 'test set accuracy:', test_set_accuracy(best_C, best_eta, 200000)
     print 'Total runtime', time.time() - x
     p.disable()
     p.dump_stats("q7{}.prof".format(datetime.datetime.now().strftime("%d-%m %H-%M-%S")))
 
 
 if __name__ == '__main__':
-    main("")
+    main(os.path.dirname(__file__))

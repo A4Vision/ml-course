@@ -7,6 +7,12 @@ import itertools
 
 import functools
 
+
+SHOW = False
+import matplotlib
+if not SHOW:
+    matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 import numpy as np
 
 # Allow any further imports to happen smoothly.
@@ -148,30 +154,42 @@ def measure_accuracies(C, eta, iterations, train_data, train_labels):
     return parameters_grid_search.AccuracyMeasurement(validation=accuracy_validation, train=accuracy_train)
 
 
-def numpy_stuff():
-    a = np.array([[1, 2, 3, ], [4, 5, 6.]])
-    print 'distance.norm(a)', np.sum(a ** 2, axis=1)
-    print 'a[np.array([0, 1, 0, 1, 1, 1])]', a[np.array([0, 1, 0, 1, 1, 1])]
-    print 'a', a
-    print 'a - a[1]', a - a[1]
-    print 'np.dot(a, np.array([3, 1, 0.]))', np.dot(a, np.array([3, 1, 0.]))
-    a[0] += np.array([1., 2., 0.])
-    print 'a', a
+def test_set_accuracy(C, eta, iterations, output_directory):
+    test_data = np.array(mnist_data.test_data, dtype=np.float32)
+    train_data = np.array(mnist_data.train_data, dtype=np.float32)
+    test_labels = np.array(mnist_data.test_labels, dtype=np.int32)
+    train_labels = np.array(mnist_data.train_labels, dtype=np.int32)
+    m, d = train_data.shape
+    # Number of labels.
+    k = 10
+    w0 = np.zeros((k, d))
+    score = LinearMulticlassSVM(C)
+    descent = sgd.StochasticGradientDescent(w0, eta, score)
+    descent.run(iterations, train_data, train_labels)
+    descent.w().dump(open(os.path.join(output_directory, "tmp.dat"), "wb"))
+    for j, w_j in enumerate(descent.w()):
+        plt.imsave(os.path.join(output_directory, "w_{}.png".format(j)), np.reshape(w_j, (28, 28)))
+
+    predictor = LinearMulticlassSVMPredictor(descent.w())
+    return predictor.accuracy(test_data, test_labels)
 
 
 def main(output_directory):
+    np.array([]).dump(open(os.path.join(output_directory, "tmp.dat"), "wb"))
     np.random.seed(123)
     np.seterr(all='ignore')
     x = time.time()
-    accuracies_gross, accuracies_deep = parameters_grid_search.best_C_eta(measure_accuracies_wrapper,
-                                                                          gross_search_iterations=5000,
-                                                                          n_gross_search_samples=5000,
-                                                                          deep_search_iterations=50000,
-                                                                          n_deep_search_samples=100000)
-    best_C, best_eta = parameters_grid_search.best_parameters(accuracies_deep)
-    parameters_grid_search.generate_error_rate_plots(best_C, best_eta, measure_accuracies_wrapper(50000),
-                                                     100000,
-                                                     output_directory)
+    # Apply a naive grid search, using only 10000 iterations, and 10000 data points.
+    best_C, best_eta = parameters_grid_search.best_C_eta(measure_accuracies_wrapper,
+                                                         gross_search_iterations=20000,
+                                                         n_gross_search_samples=10000)
+    # Plot accuracy around the best eta and best C found, using all the data, and 50000 iterations.
+    parameters_grid_search.generate_error_rate_plots(best_C, best_eta,
+                                                     measure_accuracies_wrapper(N=50000), 50000,
+                                                     output_directory, "q6_Linear_SVM")
+    print 'best: C={}, eta={}'.format(best_C, best_eta)
+    # Calculate the accuracy on the test set, using all the data, 200000 iterations.
+    print 'test set accuracy:', test_set_accuracy(best_C, best_eta, 200000, output_directory)
     print 'Total runtime', time.time() - x
 
 
