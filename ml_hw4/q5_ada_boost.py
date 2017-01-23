@@ -7,7 +7,7 @@ if not SHOW:
 
 from matplotlib import pyplot as plt
 import math
-import data
+import mnist_data
 import numpy as np
 
 
@@ -123,6 +123,9 @@ class AdaBoostHalfSpaces(object):
         assert abs(np.sum(self._Dt) - Z_t) < 1e-2
         self._Dt /= np.sum(self._Dt)
 
+    def pixel_options_lengths(self):
+        return map(len, self._pixels_options)
+
 
 class WeightedHalfSpacesPredictor(object):
     """
@@ -133,6 +136,12 @@ class WeightedHalfSpacesPredictor(object):
     def __init__(self):
         self._hs = []
         self._alphas = []
+
+    def alphas(self):
+        return list(self._alphas)
+
+    def ks(self):
+        return [h.k() for h in self._hs]
 
     def predict(self, data):
         return np.sign(self._weighted_sum(data))
@@ -209,20 +218,21 @@ class HalfSpace(object):
 
 def main(output_directory):
     start = time.time()
-    boost = AdaBoostHalfSpaces(data.train_data, data.train_labels)
+    boost = AdaBoostHalfSpaces(mnist_data.train_data, mnist_data.train_labels)
     T = 80
     train_error_rates = []
     test_error_rates = []
     train_exp_losses = []
     test_exp_losses = []
     for i in xrange(T):
-        print 'i=', i
+        if i % 10 == 0:
+            print 'i=', i
         boost.step()
         predictor = boost.predictor()
-        train_error = predictor.error_rate(data.train_data, data.train_labels)
-        test_error = predictor.error_rate(data.test_data, data.test_labels)
-        train_avg_exp_loss = predictor.average_exponential_loss(data.train_data, data.train_labels)
-        test_avg_exp_loss = predictor.average_exponential_loss(data.test_data, data.test_labels)
+        train_error = predictor.error_rate(mnist_data.train_data, mnist_data.train_labels)
+        test_error = predictor.error_rate(mnist_data.test_data, mnist_data.test_labels)
+        train_avg_exp_loss = predictor.average_exponential_loss(mnist_data.train_data, mnist_data.train_labels)
+        test_avg_exp_loss = predictor.average_exponential_loss(mnist_data.test_data, mnist_data.test_labels)
         train_error_rates.append(train_error)
         test_error_rates.append(test_error)
         train_exp_losses.append(train_avg_exp_loss)
@@ -230,23 +240,26 @@ def main(output_directory):
     plt.figure(figsize=(10, 8))
     plt.title("Error rate as function of iteration")
     plt.xlabel("iteration")
-    plt.xlabel("ErroRate")
+    plt.ylabel("ErroRate")
     plt.plot(train_error_rates, 'g-*', label="Training Error Rate")
     plt.plot(test_error_rates, 'r--', label="Test Error Rate")
+    plt.legend()
     plt.savefig(os.path.join(output_directory, "error_rate.png"))
     if SHOW:
         plt.show()
     plt.cla()
     plt.title("Average Exponential Loss: AVERAGE_i(exp(- y_i * SUM_j{alpha_j * h_j(x_i)}))")
     plt.xlabel("iteration (T)")
-    plt.xlabel("Average Exponential Loss")
+    plt.ylabel("Average Exponential Loss")
     plt.plot(train_exp_losses, 'g-*', label="Training Average Exponential Loss")
     plt.plot(test_exp_losses, 'r--', label="Test Average Exponential Loss")
+    plt.legend()
     plt.savefig(os.path.join(output_directory, "average_exponential_loss.png"))
     if SHOW:
         plt.show()
     print 'Total RunTime', time.time() - start
 
+    print 'alphas', boost.predictor().alphas()
 
 if __name__ == '__main__':
     main("outputs")
