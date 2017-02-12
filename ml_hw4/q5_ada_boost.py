@@ -7,7 +7,7 @@ if not SHOW:
 
 from matplotlib import pyplot as plt
 import math
-import mnist_data
+from ml_hw5 import mnist_data
 import numpy as np
 
 
