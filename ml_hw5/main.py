@@ -3,7 +3,7 @@ import sys
 import os
 # Allow any further imports to happen smoothly.
 sys.path.insert(0, os.path.dirname(__file__))
-import q5_ada_boost
+import ml_hw4.q5_ada_boost
 
 
 def main(argv):
@@ -14,7 +14,7 @@ def main(argv):
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
     assert os.path.isdir(output_directory)
-    q5_ada_boost.main(output_directory)
+    ml_hw4.q5_ada_boost.main(output_directory)
 
 
 if __name__ == '__main__':
