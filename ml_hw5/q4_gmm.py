@@ -1,17 +1,16 @@
-import collections
 import os
-import time
 
 from scipy.spatial import distance
 import scipy.misc
 
-SHOW = True
+SHOW = False
 import matplotlib
+
 if not SHOW:
     matplotlib.use('Agg')
 
 from matplotlib import pyplot as plt
-from ml_hw5 import mnist_data
+import mnist_data
 import numpy as np
 
 
@@ -19,6 +18,7 @@ class GaussianMixtureModelOptimizer(object):
     """
     Finds the best GMM to fit the data.
     """
+
     def __init__(self, gmm):
         """
         :param gmm: starting point.
@@ -33,7 +33,7 @@ class GaussianMixtureModelOptimizer(object):
             latent_probs[i][m] = Prob(z_i = m | x_i, theta_t)
         """
         log_likelihoods = [self._gmm.weighted_log_likelihoods(i)
-                       for i in xrange(data_len)]
+                           for i in xrange(data_len)]
         log_probs = [weighted - scipy.misc.logsumexp(weighted) for weighted in log_likelihoods]
         return [np.exp(vec) for vec in log_probs]
 
@@ -65,6 +65,7 @@ class GaussianMixtureModel(object):
 
     Pr(x) = SUM(c[m] * Pr(Gaussian[m](x))
     """
+
     def __init__(self, c_aprior_probs, gaussians):
         """
 
@@ -102,10 +103,8 @@ class GaussianMixtureModel(object):
         :param i:
         :return:
         """
-        res = 0.
-        for c, gaussian in zip(self._c, self._gaussians):
-            res += c * gaussian.log_likelihood(i)
-        return res
+        weighted = self.weighted_log_likelihoods(i)
+        return scipy.misc.logsumexp(weighted)
 
     def weighted_log_likelihoods(self, i):
         """
@@ -150,6 +149,7 @@ class Gaussian(object):
     Gaussian multivariate with diagonal covvariance matrix
     of the form sigma ** 2 * Id.
     """
+
     def __init__(self, u, sigma):
         """
 
@@ -196,7 +196,7 @@ def q4():
         label2x[label] = x
         if len(label2x) == n:
             break
-    gmm = GaussianMixtureModel([1. / n] * n, [Gaussian(label2x[label], 2.) for label in labels])
+    gmm = GaussianMixtureModel([1. / n] * n, [Gaussian(label2x[label], 1.) for label in labels])
     indexed_test_labels = [labels.index(label) for label in mnist_data.test_labels]
 
     optimizer = GaussianMixtureModelOptimizer(gmm)
@@ -209,14 +209,19 @@ def q4():
         log_likelihood = scipy.misc.logsumexp([gmm.log_likelihood(i) for i in xrange(len(mnist_data.train_data))])
         log_likelihoods.append(log_likelihood)
         gmm.preprocess(mnist_data.test_data)
-        accuracies.append(np.sum(gmm.predictions() == np.array(indexed_test_labels, dtype=np.int)) / float(len(mnist_data.test_data)))
+        accuracies.append(np.sum(gmm.predictions() == np.array(indexed_test_labels, dtype=np.int)) /
+                          float(len(mnist_data.test_data)))
+        if len(log_likelihoods) > 1:
+            improvment = log_likelihoods[-1] - log_likelihoods[-2]
+            if improvment < 1e-10:
+                break
     return gmm, labels, accuracies, log_likelihoods
 
 
 def plot_likelihood_scores(output_directory, log_likelihoods):
     plt.cla()
     plt.plot(log_likelihoods, "b*-")
-    plt.title("Log likelihod function of iteration")
+    plt.title("Log likelihood function of iteration")
     plt.xlabel("iteration")
     plt.ylabel("Log-likelihood")
     fname = os.path.join(output_directory, "log_likelihoods.png")
@@ -228,7 +233,7 @@ def plot_likelihood_scores(output_directory, log_likelihoods):
 def plot_final_state(output_directory, gmm, labels):
     for label, gaussian in zip(labels, gmm.gaussians()):
         plt.cla()
-        plt.imshow(np.reshape(gaussian.u() , (28, 28)))
+        plt.imshow(np.reshape(gaussian.u(), (28, 28)))
         plt.title("Digit={}".format(label))
         fname = os.path.join(output_directory, "final_state{:d}.png".format(label))
         plt.savefig(fname)
@@ -242,6 +247,7 @@ def plot_accuracy_rates(output_directory, accuracy_rates):
     plt.ylabel("Accuracy Rate")
     fname = os.path.join(output_directory, "accuracies.png")
     plt.savefig(fname)
+    print "Last accuracy:", accuracy_rates[-1]
     if SHOW:
         plt.show()
 
