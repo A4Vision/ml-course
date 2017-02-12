@@ -143,6 +143,9 @@ class GaussianMixtureModel(object):
         weighted = np.array([self.weighted_log_likelihoods(i) for i in xrange(self._data_length)])
         return np.argmax(weighted, axis=1)
 
+    def priors(self):
+        return list(self._c)
+
 
 class Gaussian(object):
     """
@@ -183,6 +186,9 @@ class Gaussian(object):
 
     def u(self):
         return self._u.copy()
+
+    def variance(self):
+        return self._sigma ** 2.
 
 
 def q4():
@@ -237,6 +243,10 @@ def plot_final_state(output_directory, gmm, labels):
         plt.title("Digit={}".format(label))
         fname = os.path.join(output_directory, "final_state{:d}.png".format(label))
         plt.savefig(fname)
+    print "Prior probabilities:"
+    print gmm.priors()
+    print "Variances:"
+    print [g.variance() for g in gmm.gaussians()]
 
 
 def plot_accuracy_rates(output_directory, accuracy_rates):
